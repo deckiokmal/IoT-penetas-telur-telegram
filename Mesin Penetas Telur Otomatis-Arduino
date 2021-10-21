@@ -1,0 +1,110 @@
+/*
+	KONTROL LAMPU DENGAN KENDALI TELEGRAM DAN OTOMATIS LAMPU DENGAN SENSOR DHT11
+*/
+
+
+#include "CTBot.h"
+CTBot myBot;
+#include "DHTesp.h"
+DHTesp dht;
+
+#define Indikator   D1 // Pin D1
+#define Lampu1   	D2 // Pin D2
+#define Lampu2   	D3 // Pin D3
+#define Lampu3   	D4 // Pin D4
+
+int dhtPin = D5;
+int ON = LOW, OFF = HIGH;
+
+  String ssid  = "dopnetindo.net";                                 	// Sesuaikan Dengan SSID Kalian
+  String pass  = "B3ngkulu2021";                                 	// Ganti Password Sesuai Wifi Kalian
+  String token = "1337508958:AAGCSu0W7xDZLXDTh1RAZqmzQwJUvW3Hqj0";  // Isi Sesuai Token BOT Kalian
+
+  // Untuk Setting Perintah Pada Telegram Ganti Nama Dalam Tanda Kutip Sesuai Keinginan Anda 
+     const char* Perintah_On_1 = "/NyalakanLampu1";
+     const char* Perintah_On_2 = "/NyalakanLampu2";
+     const char* Perintah_On_3 = "/NyalakanLampu3";
+
+     const char* Perintah_Off_1 = "/MatikanLampu1";
+     const char* Perintah_Off_2 = "/MatikanLampu2";
+     const char* Perintah_Off_3 = "/MatikanLampu3";
+
+void setup() {
+Serial.begin(115200);                              		// initialize Serial
+	Serial.println("Memulai Program...");
+	
+	// Initialize temperature sensor
+	dht.setup(dhtPin, DHTesp::DHT11);
+	
+	 myBot.wifiConnect(ssid, pass);                   	// Mengkoneksikan Ke WiFi
+	 myBot.setTelegramToken(token);                  	// Mengkonfigurasikan Token
+
+    if (myBot.testConnection())   
+	      Serial.println("\nKoneksi Ke Telegram OK"); else Serial.println("\nTidak Terkoneksi Ke Telegram");   // Chek koneksi internet Telegram 
+	
+	      // Pengaturan Fungsi Pin GPIOs Menjadi Output
+				pinMode(Indikator, OUTPUT);			// Output Indikator Pin D1
+				pinMode(Lampu1, OUTPUT);			// Output Lampu1	Pin D2
+				pinMode(Lampu2, OUTPUT);        	// Output Lampu2	Pin D3
+				pinMode(Lampu3, OUTPUT);       		// Output Lampu3	Pin D4
+           
+	            digitalWrite(Indikator, ON);     	// Matikan Relay 1 Saat Awal Menyala pertama kali
+				digitalWrite(Lampu1, OFF);      	// Matikan Relay 2 Saat Awal Menyala pertama kali
+				digitalWrite(Lampu2, OFF);       	// Matikan Relay 3 Saat Awal Menyala pertama kali
+				digitalWrite(Lampu3, OFF);        	// Matikan Relay 4 Saat Awal Menyala pertama kali
+	
+	Serial.println("Perintah Telegram Siap Di Fungsikan...");
+}
+
+void loop() {
+	// Reading temperature and humidity takes about 250 milliseconds!
+	// Sensor readings may also be up to 2 seconds 'old' (it's a very slow sensor)
+	TempAndHumidity lastValues = dht.getTempAndHumidity();
+    Serial.println("Temperature: " + String(lastValues.temperature,0));
+    Serial.println("Humidity: " + String(lastValues.humidity,0));
+
+	TBMessage msg;
+	if (myBot.getNewMessage(msg)) {													//Membaca Pesan Masuk...
+
+		if (msg.text.equalsIgnoreCase(Perintah_On_1)) {								// Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu1, ON);											// Nyalakan Lampu1
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu1 Nyala");}			// Kirim Balasan Lampu Berhasil Di Nyalakan
+		else if (msg.text.equalsIgnoreCase(Perintah_Off_1)) {						// Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu1, OFF);											// Matikan Lampu1
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu1 Mati");}			// Kirim Balasan Lampu Berhasil Di Nyalakan
+
+		else if (msg.text.equalsIgnoreCase(Perintah_On_2)) {                        // Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu2, ON);                                           // Nyalakan Lampu2
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu2 Nyala");}      	// Kirim Balasan Lampu Berhasil Di Nyalakan
+		else if (msg.text.equalsIgnoreCase(Perintah_Off_2)) {                       // Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu2, OFF);                                          // Matikan Lampu2
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu2 Mati");}          // Kirim Balasan Lampu Berhasil Di Nyalakan          
+
+		else if (msg.text.equalsIgnoreCase(Perintah_On_3)) {						// Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu3, ON);                                           // Nyalakan Lampu3
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu3 Nyala");}   		// Kirim Balasan Lampu Berhasil Di Nyalakan
+		else if (msg.text.equalsIgnoreCase(Perintah_Off_3)) {                       // Membaca Perintah Menyalakan Jika Ada
+				digitalWrite(Lampu3, OFF);                                          // Matikan Lampu3
+				myBot.sendMessage(msg.sender.id, "Saat Ini Lampu3 Mati");}          // Kirim Balasan Lampu Berhasil Di Nyalakan    
+
+		else {                                                                      // Jika Pesan Tidak Ada Dalam Daftar Perintah Maka Akan Kirimkan Hint
+	   String Balasan;
+			Balasan = (String)"Selamat Datang " + msg.sender.username + (String)
+			          "\nControl IOT TBot Dopnetindo \nTidak Ditemukan Perintah."
+			          "\n\nCoba Gunakan Perintah Berikut:"
+                "\nLampu1 :\n\t"
+                  + String(Perintah_On_1)+"\n\t"
+                  + String(Perintah_Off_1)+"\n"
+                "\nLampu2 :\n\t"
+                  + String(Perintah_On_2)+"\n"
+                  + String(Perintah_Off_2)+"\n"
+                "\nLampu2 :\n\t"
+                  + String(Perintah_On_3)+"\n\t"
+                  + String(Perintah_Off_3)+"\n"
+                
+			;myBot.sendMessage(msg.sender.id, Balasan);             // and send it
+		}
+	}
+	
+	delay(1000);
+}
