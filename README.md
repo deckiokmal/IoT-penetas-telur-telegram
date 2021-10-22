@@ -1,4 +1,4 @@
-# IoT-Project
+# Penetas Telur Telegram
 Ini Adalah Project Internet of Things Sederhana.
 
 Bagaimana Membuat Alat Penetas Telur Otomatis dan Juga Dimonitor melalui TelegramBot
